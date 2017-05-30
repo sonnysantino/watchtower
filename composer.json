@@ -1,0 +1,34 @@
+{
+    "name": "santiripper/watchtower",
+    "type": "library",
+    "description": "Watchtower is a Laravel wrapper for sending custom metrics to Amazon AWS CloudWatch in a really pleasant & powerful way.",
+    "keywords": ["laravel","cloudwatch", "aws", "watchtower"],
+    "homepage": "https://github.com/santiripper/watchtower",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Santi Corrales",
+            "email": "santiripper@gmail.com"
+        }
+    ],
+    "repositories": [
+        
+    ],
+    "require": {
+        "php": ">=5.6.0",
+        "aws/aws-sdk-php-laravel": "^3.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.0",
+        "laravel/lumen-framework": "^5.4"
+    },
+    "autoload": {
+        "classmap": [
+            
+        ],
+        "psr-0": {
+            "Santiripper\\Watchtower\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
