@@ -19,6 +19,25 @@ class Client
      * @var array
      */
     private $metrics = [];
+    /**
+     * @var bool
+     */
+    private $sendOnShutdown;
+
+    /**
+     * @var bool
+     */
+    protected $enabled;
+
+    /**
+     * @var string
+     */
+    protected $output;
+
+    /**
+     * @var bool
+     */
+    protected $throw_exception_on_fail;
 
     /**
      * Client constructor.
@@ -26,6 +45,10 @@ class Client
     public function __construct()
     {
         $this->cloudWatch = app()->make('aws')->createClient('cloudwatch');
+
+        $this->sendOnShutdown = config('watchtower.send_on_shutdown', false);
+        $this->enabled        = config('watchtower.enabled', false);
+        $this->output         = config('watchtower.output');
 
         register_shutdown_function([$this, 'shutdown']);
     }
@@ -41,6 +64,28 @@ class Client
         }
 
         return $this->metrics[$on] = new Metric($on);
+    }
+
+    /**
+     * @param boolean $sendOnShutdown
+     *
+     * @return $this
+     */
+    public function setSendOnShutdown($sendOnShutdown)
+    {
+        $this->sendOnShutdown = $sendOnShutdown;
+        return $this;
+    }
+
+    /**
+     * @param boolean $enabled
+     *
+     * @return $this
+     */
+    public function setEnabled($enabled)
+    {
+        $this->enabled = $enabled;
+        return $this;
     }
 
     /**
@@ -76,7 +121,7 @@ class Client
         }
 
         //$data     = $this->toArray();
-        $output   = config('watchtower.output');
+        $output   = $this->output;
         $function = camel_case('send_to_' . $output);
 
         try {
@@ -84,7 +129,7 @@ class Client
                 call_user_func([$this, $function], $metric->toArray());
             }
         } catch (\Exception $e) {
-            if (config('watchtower.throw_exception_on_fail')) {
+            if ($this->throw_exception_on_fail) {
                 throw $e;
             }
 
@@ -117,7 +162,7 @@ class Client
      */
     private function isEnabled()
     {
-        return config('watchtower.enabled', false);
+        return $this->enabled;
     }
 
     /**
@@ -125,9 +170,7 @@ class Client
      */
     public function shutdown()
     {
-        $sendOnShutdown = config('watchtower.send_on_shutdown', false);
-
-        if ($sendOnShutdown) {
+        if ($this->sendOnShutdown) {
             $this->send();
         }
     }
