@@ -21,11 +21,18 @@ class Client
     private $metrics = [];
 
     /**
+     * @var bool
+     */
+    private $sendOnShutdown;
+
+    /**
      * Client constructor.
      */
     public function __construct()
     {
         $this->cloudWatch = app()->make('aws')->createClient('cloudwatch');
+
+        $this->sendOnShutdown = config('watchtower.send_on_shutdown', false);
 
         register_shutdown_function([$this, 'shutdown']);
     }
@@ -41,6 +48,17 @@ class Client
         }
 
         return $this->metrics[$on] = new Metric($on);
+    }
+
+    /**
+     * @param boolean $sendOnShutdown
+     *
+     * @return $this
+     */
+    public function setSendOnShutdown($sendOnShutdown)
+    {
+        $this->sendOnShutdown = $sendOnShutdown;
+        return $this;
     }
 
     /**
@@ -125,9 +143,7 @@ class Client
      */
     public function shutdown()
     {
-        $sendOnShutdown = config('watchtower.send_on_shutdown', false);
-
-        if ($sendOnShutdown) {
+        if ($this->sendOnShutdown) {
             $this->send();
         }
     }
